@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webinar UI - Version 2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        .header h1 {
+            margin: 0;
+            display: inline-block;
+        }
+        .header p {
+            margin: 5px 0;
+        }
+        .edit-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+        .video-section {
+            flex: 2;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            position: relative;
+        }
+        .video-section video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .chat-section {
+            flex: 1;
+            background-color: #fff;
+            border-left: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .chat-input {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .chat-input input {
+            width: 80%;
+            padding: 8px;
+        }
+        .chat-input button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .controls {
+            background-color: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .controls button {
+            margin: 0 5px;
+            padding: 10px 15px;
+            background-color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .reactions {
+            background-color: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .reactions button {
+            margin: 0 5px;
+            padding: 10px;
+            background-color: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: white;
+        }
+        .chat-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        .chat-tabs button {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .chat-tabs button.active {
+            border-bottom-color: #007bff;
+        }
+        .chat-content {
+            flex: 1;
+            display: none;
+        }
+        .chat-content.active {
+            display: block;
+        }
+        .raised-hand {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            font-size: 24px;
+            display: none;
+        }
+        .settings-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+        .settings-panel button {
+            display: block;
+            margin: 10px 0;
+            width: 100%;
+        }
+        .poll-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .poll-display button {
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .participants-panel {
+            position: fixed;
+            right: 20px;
+            top: 100px;
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            width: 250px;
+            display: none;
+            z-index: 1000;
+        }
+        .participants-panel h3 {
+            margin-top: 0;
+        }
+        .participant-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .connection-status {
+            background-color: rgba(0,255,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        .invite-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1001;
+        }
+        .invite-panel input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+        }
+        .schedule-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1002;
+            width: 300px;
+        }
+        .schedule-panel input, .schedule-panel button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        .email-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1003;
+            width: 400px;
+        }
+        .email-panel input, .email-panel textarea, .email-panel button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        .left-bar {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        .right-bar {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .bottom-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+        .bar-button {
+            padding: 8px 12px;
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .reaction-button {
+            padding: 10px;
+            background-color: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="edit-btn" onclick="toggleEditMode()">Edit</button>
+        <h1 id="webinarTitleDisplay">Live Webinar: BCD Academy</h1>
+        <p>Speaker: <span id="speakerDisplay">John Doe</span> | Duration: 1 hour | Participants: <span id="participantCount">1</span></p>
+    </div>
+    <div class="container">
+        <div class="video-section">
+            <video id="videoElement" autoplay muted></video>
+            <div id="placeholder" style="position: absolute;">Click "Start Camera" to begin</div>
+            <div id="pollDisplay" class="poll-display" style="display: none;">
+                <h3>Poll: What is your favorite programming language?</h3>
+                <button onclick="vote('JavaScript')">JavaScript</button>
+                <button onclick="vote('Python')">Python</button>
+                <button onclick="vote('Java')">Java</button>
+                <p>Votes: JS: <span id="jsVotes">0</span>, Python: <span id="pyVotes">0</span>, Java: <span id="javaVotes">0</span></p>
+            </div>
+            <div class="top-bar">
+                <div id="connectionStatus" class="connection-status">Connected</div>
+                <div id="raisedHandIndicator" class="raised-hand">✋</div>
+            </div>
+            <div class="left-bar">
+                <button class="bar-button" id="muteBtn" onclick="toggleMute()">Mute</button>
+                <button class="bar-button" id="videoBtn" onclick="toggleVideo()">Video Off</button>
+                <button class="bar-button" onclick="startCamera()">Start Camera</button>
+                <button class="bar-button" id="screenShareBtn" onclick="toggleScreenShare()">Share Screen</button>
+            </div>
+            <div class="right-bar">
+                <button class="bar-button" id="recordBtn" onclick="toggleRecord()">Record</button>
+                <button class="bar-button" id="raiseHandBtn" onclick="toggleRaiseHand()">Raise Hand</button>
+                <button class="bar-button" onclick="openParticipants()">Participants</button>
+                <button class="bar-button" onclick="inviteParticipant()">Invite</button>
+            </div>
+            <div class="bottom-bar">
+                <button class="bar-button" onclick="toggleFullScreen()">Full Screen</button>
+                <button class="bar-button" onclick="togglePoll()">Poll</button>
+                <button class="bar-button" onclick="openSettings()">Settings</button>
+                <button class="bar-button" onclick="openSchedule()">Schedule</button>
+                <button class="bar-button" onclick="openEmail()">Email</button>
+                <button class="bar-button" onclick="leaveWebinar()">Leave</button>
+                <div class="reactions">
+                    <button class="reaction-button" onclick="sendReaction('👍')">👍</button>
+                    <button class="reaction-button" onclick="sendReaction('👎')">👎</button>
+                    <button class="reaction-button" onclick="sendReaction('❤️')">❤️</button>
+                    <button class="reaction-button" onclick="sendReaction('😂')">😂</button>
+                    <button class="reaction-button" onclick="sendReaction('😮')">😮</button>
+                </div>
+            </div>
+        </div>
+        <div class="chat-section">
+            <div class="chat-tabs">
+                <button onclick="switchTab('chat')" class="active" id="chatTab">Chat</button>
+                <button onclick="switchTab('qa')" id="qaTab">Q&A</button>
+            </div>
+            <div id="chatContent" class="chat-content active">
+                <div class="chat-messages" id="chatMessages">
+                    <p><strong>Moderator:</strong> Welcome to the webinar!</p>
+                    <p><strong>John Doe:</strong> Let's get started with BCD Academy.</p>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="senderInput" placeholder="Your name" value="You (Host)">
+                    <input type="text" id="messageInput" placeholder="Type your message...">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+            <div id="qaContent" class="chat-content">
+                <div class="chat-messages" id="qaMessages">
+                    <p><strong>Q&A:</strong> Ask your questions here!</p>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="qaInput" placeholder="Ask a question...">
+                    <button onclick="sendQA()">Ask</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="settingsPanel" class="settings-panel">
+        <h3>Settings</h3>
+        <button onclick="changeBackground()">Change Background</button>
+        <button onclick="toggleChat()">Toggle Chat</button>
+        <button onclick="closeSettings()">Close</button>
+    </div>
+
+    <div id="participantsPanel" class="participants-panel">
+        <h3>Participants</h3>
+        <div id="participantsList">
+            <div class="participant-item">You (Host)</div>
+        </div>
+        <input type="text" id="newParticipant" placeholder="Add participant name">
+        <button onclick="addParticipant()">Add</button>
+        <button onclick="closeParticipants()">Close</button>
+    </div>
+
+    <div id="invitePanel" class="invite-panel">
+        <h3>Invite Participants</h3>
+        <p>Share this link to invite others:</p>
+        <input type="text" id="inviteLink" readonly value="https://webinar.bcdacademy.com/join?room=abcd123">
+        <button onclick="copyInviteLink()">Copy Link</button>
+        <button onclick="closeInvite()">Close</button>
+    </div>
+
+    <div id="schedulePanel" class="schedule-panel">
+        <h3>Schedule Webinar</h3>
+        <form id="scheduleForm">
+            <label for="webinarTitle">Title:</label>
+            <input type="text" id="webinarTitle" required><br><br>
+            <label for="webinarDate">Date:</label>
+            <input type="date" id="webinarDate" required><br><br>
+            <label for="webinarTime">Time:</label>
+            <input type="time" id="webinarTime" required><br><br>
+            <label for="webinarDuration">Duration (hours):</label>
+            <input type="number" id="webinarDuration" min="1" required><br><br>
+            <button type="submit">Schedule</button>
+            <button type="button" onclick="closeSchedule()">Close</button>
+        </form>
+    </div>
+
+    <div id="emailPanel" class="email-panel">
+        <h3>Email Invitations</h3>
+        <form id="emailForm">
+            <label for="emailRecipients">Recipients (comma-separated):</label>
+            <input type="text" id="emailRecipients" required><br><br>
+            <label for="emailSubject">Subject:</label>
+            <input type="text" id="emailSubject" required><br><br>
+            <label for="emailMessage">Message:</label>
+            <textarea id="emailMessage" rows="4" required></textarea><br><br>
+            <button type="submit">Send Emails</button>
+            <button type="button" onclick="closeEmail()">Close</button>
+        </form>
+    </div>
+
+    <script>
+        let stream;
+        let isMuted = false;
+        let isVideoOff = false;
+        let isHandRaised = false;
+        let isRecording = false;
+        let screenStream;
+        let isScreenSharing = false;
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                const videoElement = document.getElementById('videoElement');
+                videoElement.srcObject = stream;
+                document.getElementById('placeholder').style.display = 'none';
+                document.getElementById('muteBtn').textContent = 'Mute';
+                document.getElementById('videoBtn').textContent = 'Video Off';
+            } catch (error) {
+                console.error('Error accessing camera and microphone:', error);
+                alert('Error accessing camera and microphone. Please check permissions.');
+            }
+        }
+
+        function toggleMute() {
+            if (stream) {
+                const audioTracks = stream.getAudioTracks();
+                audioTracks.forEach(track => {
+                    track.enabled = isMuted;
+                });
+                isMuted = !isMuted;
+                document.getElementById('muteBtn').textContent = isMuted ? 'Unmute' : 'Mute';
+            }
+        }
+
+        function toggleVideo() {
+            if (stream) {
+                const videoTracks = stream.getVideoTracks();
+                videoTracks.forEach(track => {
+                    track.enabled = isVideoOff;
+                });
+                isVideoOff = !isVideoOff;
+                document.getElementById('videoBtn').textContent = isVideoOff ? 'Video On' : 'Video Off';
+            }
+        }
+
+        async function toggleScreenShare() {
+            if (!isScreenSharing) {
+                try {
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                    const videoElement = document.getElementById('videoElement');
+                    videoElement.srcObject = screenStream;
+                    document.getElementById('screenShareBtn').textContent = 'Stop Sharing';
+                    isScreenSharing = true;
+                } catch (error) {
+                    console.error('Error sharing screen:', error);
+                    alert('Error sharing screen.');
+                }
+            } else {
+                screenStream.getTracks().forEach(track => track.stop());
+                const videoElement = document.getElementById('videoElement');
+                videoElement.srcObject = stream;
+                document.getElementById('screenShareBtn').textContent = 'Share Screen';
+                isScreenSharing = false;
+            }
+        }
+
+        function toggleRecord() {
+            isRecording = !isRecording;
+            document.getElementById('recordBtn').textContent = isRecording ? 'Stop Recording' : 'Record';
+            if (isRecording) {
+                alert('Recording started (simulated)');
+            } else {
+                alert('Recording stopped (simulated)');
+            }
+        }
+
+        function toggleRaiseHand() {
+            isHandRaised = !isHandRaised;
+            const indicator = document.getElementById('raisedHandIndicator');
+            indicator.style.display = isHandRaised ? 'block' : 'none';
+            document.getElementById('raiseHandBtn').textContent = isHandRaised ? 'Lower Hand' : 'Raise Hand';
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function openSettings() {
+            document.getElementById('settingsPanel').style.display = 'block';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPanel').style.display = 'none';
+        }
+
+        function changeBackground() {
+            const colors = ['#f4f4f4', '#e8f4f8', '#f8e8e8', '#e8f8e8'];
+            const current = document.body.style.backgroundColor;
+            const next = colors[(colors.indexOf(current) + 1) % colors.length];
+            document.body.style.backgroundColor = next;
+        }
+
+        function toggleChat() {
+            const chatSection = document.querySelector('.chat-section');
+            chatSection.style.display = chatSection.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function leaveWebinar() {
+            if (confirm('Are you sure you want to leave the webinar?')) {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                if (screenStream) {
+                    screenStream.getTracks().forEach(track => track.stop());
+                }
+                window.close();
+            }
+        }
+
+        function sendReaction(emoji) {
+            const messages = document.getElementById('chatMessages');
+            const message = document.createElement('p');
+            message.innerHTML = '<strong>You reacted:</strong> ' + emoji;
+            messages.appendChild(message);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function switchTab(tab) {
+            document.getElementById('chatTab').classList.remove('active');
+            document.getElementById('qaTab').classList.remove('active');
+            document.getElementById('chatContent').classList.remove('active');
+            document.getElementById('qaContent').classList.remove('active');
+            
+            if (tab === 'chat') {
+                document.getElementById('chatTab').classList.add('active');
+                document.getElementById('chatContent').classList.add('active');
+            } else {
+                document.getElementById('qaTab').classList.add('active');
+                document.getElementById('qaContent').classList.add('active');
+            }
+        }
+
+        function sendQA() {
+            const input = document.getElementById('qaInput');
+            const messages = document.getElementById('qaMessages');
+            if (input.value.trim() !== '') {
+                const message = document.createElement('p');
+                message.innerHTML = '<strong>You asked:</strong> ' + input.value;
+                messages.appendChild(message);
+                input.value = '';
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+
+        function sendMessage() {
+            const senderInput = document.getElementById('senderInput');
+            const messageInput = document.getElementById('messageInput');
+            const messages = document.getElementById('chatMessages');
+            if (messageInput.value.trim() !== '') {
+                const message = document.createElement('p');
+                message.innerHTML = '<strong>' + senderInput.value + ':</strong> ' + messageInput.value;
+                messages.appendChild(message);
+                messageInput.value = '';
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+
+        let pollVisible = false;
+        let votes = { js: 0, py: 0, java: 0 };
+
+        function togglePoll() {
+            pollVisible = !pollVisible;
+            document.getElementById('pollDisplay').style.display = pollVisible ? 'block' : 'none';
+        }
+
+        function vote(option) {
+            if (option === 'JavaScript') votes.js++;
+            else if (option === 'Python') votes.py++;
+            else if (option === 'Java') votes.java++;
+            
+            document.getElementById('jsVotes').textContent = votes.js;
+            document.getElementById('pyVotes').textContent = votes.py;
+            document.getElementById('javaVotes').textContent = votes.java;
+        }
+
+        function openParticipants() {
+            document.getElementById('participantsPanel').style.display = 'block';
+        }
+
+        function closeParticipants() {
+            document.getElementById('participantsPanel').style.display = 'none';
+        }
+
+        function inviteParticipant() {
+            document.getElementById('invitePanel').style.display = 'block';
+        }
+
+        function closeInvite() {
+            document.getElementById('invitePanel').style.display = 'none';
+        }
+
+        function copyInviteLink() {
+            const linkInput = document.getElementById('inviteLink');
+            linkInput.select();
+            document.execCommand('copy');
+            alert('Invite link copied to clipboard!');
+        }
+
+        // Simulate network connections and participants
+        let participants = ['You (Host)'];
+        let connectionQuality = 'good';
+
+        function updateConnectionStatus() {
+            const status = document.getElementById('connectionStatus');
+            const qualities = ['Connected', 'Good Connection', 'Fair Connection', 'Poor Connection'];
+            const colors = ['rgba(0,255,0,0.8)', 'rgba(0,255,0,0.8)', 'rgba(255,255,0,0.8)', 'rgba(255,0,0,0.8)'];
+            
+            connectionQuality = qualities[Math.floor(Math.random() * qualities.length)];
+            status.textContent = connectionQuality;
+            status.style.backgroundColor = colors[qualities.indexOf(connectionQuality)];
+        }
+
+        function simulateNewParticipant() {
+            const names = ['Alice Johnson', 'Bob Smith', 'Carol Davis', 'David Wilson', 'Emma Brown'];
+            const newName = names[Math.floor(Math.random() * names.length)];
+            if (!participants.includes(newName)) {
+                participants.push(newName);
+                updateParticipantsList();
+                // Simulate connection message
+                const messages = document.getElementById('chatMessages');
+                const message = document.createElement('p');
+                message.innerHTML = '<strong>System:</strong> ' + newName + ' joined the webinar';
+                messages.appendChild(message);
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+
+        function updateParticipantsList() {
+            const list = document.getElementById('participantsList');
+            list.innerHTML = '';
+            participants.forEach(participant => {
+                const item = document.createElement('div');
+                item.className = 'participant-item';
+                item.innerHTML = `${participant} <button onclick="removeParticipant('${participant}')">Remove</button>`;
+                list.appendChild(item);
+            });
+        }
+
+        // Scheduling functions
+        function openSchedule() {
+            document.getElementById('schedulePanel').style.display = 'block';
+        }
+
+        function closeSchedule() {
+            document.getElementById('schedulePanel').style.display = 'none';
+        }
+
+        document.getElementById('scheduleForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const title = document.getElementById('webinarTitle').value;
+            const date = document.getElementById('webinarDate').value;
+            const time = document.getElementById('webinarTime').value;
+            const duration = document.getElementById('webinarDuration').value;
+            alert(`Webinar "${title}" scheduled for ${date} at ${time}, duration: ${duration} hours.`);
+            closeSchedule();
+        });
+
+        // Emailing functions
+        function openEmail() {
+            document.getElementById('emailPanel').style.display = 'block';
+        }
+
+        function closeEmail() {
+            document.getElementById('emailPanel').style.display = 'none';
+        }
+
+        document.getElementById('emailForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const recipients = document.getElementById('emailRecipients').value;
+            const subject = document.getElementById('emailSubject').value;
+            const message = document.getElementById('emailMessage').value;
+            alert(`Emails sent to: ${recipients}\nSubject: ${subject}\nMessage: ${message}`);
+            closeEmail();
+        });
+
+        // Edit mode functions
+        let isEditMode = false;
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const titleDisplay = document.getElementById('webinarTitleDisplay');
+            const speakerDisplay = document.getElementById('speakerDisplay');
+            const editBtn = document.querySelector('.edit-btn');
+            
+            if (isEditMode) {
+                titleDisplay.contentEditable = 'true';
+                speakerDisplay.contentEditable = 'true';
+                titleDisplay.focus();
+                editBtn.textContent = 'Save';
+                titleDisplay.style.border = '1px solid white';
+                speakerDisplay.style.border = '1px solid white';
+            } else {
+                titleDisplay.contentEditable = 'false';
+                speakerDisplay.contentEditable = 'false';
+                editBtn.textContent = 'Edit';
+                titleDisplay.style.border = 'none';
+                speakerDisplay.style.border = 'none';
+                // Save to localStorage
+                localStorage.setItem('webinarTitle', titleDisplay.textContent);
+                localStorage.setItem('webinarSpeaker', speakerDisplay.textContent);
+            }
+        }
+
+        // Load saved data on page load
+        window.onload = function() {
+            const savedTitle = localStorage.getItem('webinarTitle');
+            const savedSpeaker = localStorage.getItem('webinarSpeaker');
+            if (savedTitle) document.getElementById('webinarTitleDisplay').textContent = savedTitle;
+            if (savedSpeaker) document.getElementById('speakerDisplay').textContent = savedSpeaker;
+        };
+
+        // Participant management
+        function addParticipant() {
+            const name = document.getElementById('newParticipant').value.trim();
+            if (name && !participants.includes(name)) {
+                participants.push(name);
+                updateParticipantsList();
+                document.getElementById('newParticipant').value = '';
+                updateParticipantCount();
+            }
+        }
+
+        function removeParticipant(name) {
+            participants = participants.filter(p => p !== name);
+            updateParticipantsList();
+            updateParticipantCount();
+        }
+
+        function updateParticipantCount() {
+            document.getElementById('participantCount').textContent = participants.length;
+        }
+
+        // Initialize connection monitoring
+        setInterval(updateConnectionStatus, 5000);
+        setInterval(() => {
+            if (Math.random() < 0.3) { // 30% chance every 15 seconds
+                simulateNewParticipant();
+            }
+        }, 15000);
+    </script>
+</body>
+</html>
