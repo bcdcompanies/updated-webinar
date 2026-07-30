@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Install server dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Install client dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Build client
+        run: npm run build
+        working-directory: client
+
+      - name: Syntax check server files
+        run: |
+          node --check src/index.js
+          node --check src/routes/webinars.js
+          node --check src/routes/join.js
+          node --check src/reminderWorker.js
+        working-directory: server
+
+      - name: Build API container image
+        run: docker build -f Dockerfile.api -t webinar-api:ci .
+
+      - name: Build worker container image
+        run: docker build -f Dockerfile.worker -t webinar-worker:ci .

@@ -1,0 +1,32 @@
+# Render Blueprint — deploys the whole app as ONE free web service.
+# The Node server serves both the API and the built React app.
+# Video is handled by LiveKit Cloud (set the LIVEKIT_* vars below).
+#
+# To use: push this repo to GitHub, then in Render click
+# "New +" → "Blueprint" and point it at the repo. Fill in the vars marked
+# sync:false when prompted (they're secrets, not stored in git).
+services:
+  - type: web
+    name: webinar
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # --- LiveKit Cloud (from your project at cloud.livekit.io) ---
+      - key: LIVEKIT_URL          # e.g. wss://your-project.livekit.cloud
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      # --- Host access + email ---
+      - key: HOST_KEY             # pick a long random string
+        sync: false
+      - key: RESEND_API_KEY       # optional; blank = links logged, not emailed
+        sync: false
+      - key: MAIL_FROM
+        value: onboarding@resend.dev
+    # PORT and RENDER_EXTERNAL_URL are provided by Render automatically.

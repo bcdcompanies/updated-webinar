@@ -1,0 +1,20 @@
+{
+  "name": "webinar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-hosted webinar platform — single-service build for deployment",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "bootstrap": "sh ./scripts/bootstrap.sh",
+    "dev": "sh -c 'npm run dev:server & npm run dev:client & wait'",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev -- --host",
+    "start:local-stack": "sh ./scripts/start-local-stack.sh",
+    "prepare:attendee-pack": "sh ./scripts/prepare-attendee-pack.sh",
+    "export:attendee-pack": "sh ./scripts/export-attendee-pack.sh",
+    "build": "npm --prefix client install --include=dev && npm --prefix client run build && npm --prefix server install",
+    "start": "npm --prefix server start"
+  }
+}

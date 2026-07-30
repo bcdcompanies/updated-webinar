@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output
+client/dist/
+
+# Secrets & local env (NEVER commit real keys)
+.env
+*.env
+!.env.example
+
+# Local database
+server/data/
+
+# Misc
+.DS_Store
+*.log

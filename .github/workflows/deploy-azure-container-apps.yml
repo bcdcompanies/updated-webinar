@@ -1,0 +1,59 @@
+name: Deploy to Azure Container Apps
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+  ACR_NAME: ${{ secrets.AZURE_CONTAINER_REGISTRY_NAME }}
+  API_APP_NAME: ${{ secrets.AZURE_CONTAINER_APP_API_NAME }}
+  WORKER_APP_NAME: ${{ secrets.AZURE_CONTAINER_APP_WORKER_NAME }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and push API image to ACR
+        run: |
+          az acr build \
+            --registry "$ACR_NAME" \
+            --image "webinar-api:${GITHUB_SHA}" \
+            --file Dockerfile.api \
+            .
+
+      - name: Build and push worker image to ACR
+        run: |
+          az acr build \
+            --registry "$ACR_NAME" \
+            --image "webinar-worker:${GITHUB_SHA}" \
+            --file Dockerfile.worker \
+            .
+
+      - name: Update API container app image
+        run: |
+          az containerapp update \
+            --name "$API_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "${ACR_NAME}.azurecr.io/webinar-api:${GITHUB_SHA}"
+
+      - name: Update worker container app image
+        run: |
+          az containerapp update \
+            --name "$WORKER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "${ACR_NAME}.azurecr.io/webinar-worker:${GITHUB_SHA}"

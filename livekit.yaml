@@ -1,0 +1,16 @@
+# LiveKit server config for local development.
+# CHANGE the keys/secret below before deploying anywhere public.
+port: 7880
+rtc:
+  tcp_port: 7881
+  udp_port: 7882        # single UDP port for media (matches docker-compose)
+  # Local dev: run livekit-server natively (not Docker Desktop, whose NAT
+  # breaks WebRTC media). With native run, this advertises your machine's real
+  # LAN interface so media flows directly to the browser — no NAT, no relay.
+  # For a real deployment, set use_external_ip: true and open UDP 7882.
+  use_external_ip: false
+keys:
+  # apiKey: apiSecret  — must match LIVEKIT_API_KEY / LIVEKIT_API_SECRET in server/.env
+  devkey: secret_change_me_at_least_32_chars_long
+logging:
+  level: info
